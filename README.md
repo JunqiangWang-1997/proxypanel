@@ -1,57 +1,71 @@
 # ProxyPanel
 
-一个前后端分离的机场面板起步项目。
+一个前后端分离的 Xray 节点纳管面板原型。
 
 ## 声明
 
-本项目仅用于个人学习、技术研究与本地联调练习，目的是熟悉前后端分离架构、Node.js / Vue 工程组织、SQLite 持久化以及 Xray gRPC API 的调用方式。
+本项目仅用于个人学习、技术研究与本地联调练习。请严格遵守所在地法律法规、服务条款与网络使用规范，不得将本项目用于违法违规、侵权或滥用网络资源的用途。
 
-项目作者与使用者应严格遵守所在国家和地区的法律法规、服务条款与网络使用规范，不得将本项目用于任何违法违规、侵权、滥用网络资源或规避监管的用途。
+## 现在的核心思路
 
-如果你打算基于本项目继续开发，请在合法、合规、可审计的前提下进行，并自行承担部署、运营和使用过程中的责任。
+这个版本不再要求你先在远端手动准备 gRPC 节点，再回来填 `grpcHost/inboundTag`。
+
+现在的流程是：
+
+1. 在前端定义协议模板
+2. 在前端填写服务器 IP、`root`、密码或私钥
+3. 后端通过 SSH 登录远端服务器
+4. 后端生成 Xray 配置、安装 Xray、重启服务
+5. 后端把部署状态、控制端口和可管理状态回写给前端
 
 ## 技术栈
 
 - 后端：Node.js、TypeScript、Express、SQLite
 - 前端：Vue 3、Vite、TypeScript
-- Xray 集成：gRPC `HandlerService.AlterInbound`
+- 节点部署：后端调用本机 `ssh` / `scp`
+- Xray 控制：gRPC `HandlerService.AlterInbound`
 
 ## 已实现内容
 
-- 用户管理 REST API
-  - `GET /api/users`
-  - `POST /api/users`
-  - `DELETE /api/users/:id`
-- 节点查询 REST API
+- 协议模板管理 REST API
+  - `GET /api/protocol-profiles`
+  - `POST /api/protocol-profiles`
+  - `PATCH /api/protocol-profiles/:id`
+  - `DELETE /api/protocol-profiles/:id`
+- 节点接入与部署 REST API
   - `GET /api/nodes`
   - `POST /api/nodes`
   - `PATCH /api/nodes/:id`
   - `DELETE /api/nodes/:id`
-  - `POST /api/nodes/:id/ping`
-- SQLite 初始化与种子数据
+  - `POST /api/nodes/:id/ping`：验证 SSH 凭据
+  - `POST /api/nodes/:id/deploy`：远端部署模板
+- 用户管理 REST API
+  - `GET /api/users`
+  - `POST /api/users`
+  - `DELETE /api/users/:id`
+- SQLite 持久化
+  - `protocol_profiles`
   - `nodes`
   - `users`
-- Xray 用户操作封装
-  - `addUser`
-  - `removeUser`
 - Vue 管理页面
-  - 用户列表
-  - 添加用户
-  - 删除用户
-  - 节点选择
+  - 协议模板编辑
+  - 服务器接入
+  - SSH 验证
+  - 节点部署状态
+  - 已部署 VLESS 节点的用户管理
 
 ## 目录结构
 
 ```text
 .
 ├── backend
-│   ├── src
-│   │   ├── controllers
-│   │   ├── db
-│   │   ├── repositories
-│   │   ├── routes
-│   │   ├── services
-│   │   └── proto
+│   └── src
+│       ├── controllers
+│       ├── db
+│       ├── repositories
+│       ├── routes
+│       ├── services
+│       └── proto
 └── frontend
     └── src
         ├── api
@@ -73,52 +87,28 @@ npm install
 cp backend/.env.example backend/.env
 ```
 
-3. 一条命令启动前后端
+3. 启动前后端
 
 ```bash
 npm run dev
 ```
 
-默认会启动：
+默认地址：
 
 - 后端：`http://localhost:3000`
 - 前端：`http://localhost:5173`
 
-4. 如果本地已经准备好 Xray 二进制，可连同 Xray 一起启动
+## 部署能力说明
 
-```bash
-npm run dev:stack
-```
+- 后端部署节点时依赖本机存在 `ssh` 和 `scp`
+- 如果你要用密码认证，后端所在机器还需要安装 `sshpass`
+- 节点部署脚本会在远端尝试安装 `curl`、`unzip`、`xray`
+- 默认种子里带了两个协议模板：
+  - `VLESS TCP Baseline`
+  - `VMess WS Baseline`
 
-`dev:stack` 默认读取：
+## 当前边界
 
-- Xray 二进制：`tools/xray/v26.3.27/xray`
-- Xray 配置：`xray-test.json`
-
-如果你的 Xray 路径不同，可临时覆盖：
-
-```bash
-XRAY_BIN=/your/path/to/xray npm run dev:stack
-```
-
-说明：
-
-- `npm run dev` 会在 `backend/.env` 不存在时自动从 `.env.example` 复制一份
-- 前端现在已经可以直接在页面里做节点新增、编辑、删除和 Ping 测试，不必全靠 `curl`
-
-## 默认后端配置
-
-- API 端口：`3000`
-- SQLite 文件：`backend/data/proxypanel.sqlite`
-- 默认节点：
-  - 名称：`Local Xray`
-  - gRPC 地址：`127.0.0.1:10085`
-  - 入站标签：`main-inbound`
-  - 协议：`vless`
-
-## 当前约束
-
-- Xray 用户写入当前只实现 `vless` 账户编码。
-- 删除用户时会先调用 Xray，再删除本地数据库记录。
-- 多节点已经有表结构和节点接口，后续可以继续补节点增删改查与健康检查。
-- 节点管理已支持页面直接新增、编辑、删除和 Xray gRPC 连通性测试。
+- 用户增删目前仍以 Xray gRPC 为控制面，实际只对 `vless` 节点开放
+- 自定义协议模板已经支持用 JSON 模板定义和部署，但不同协议的“用户下发”能力需要分别补充
+- 默认部署脚本为了让控制后端能连上节点，会把 Xray API 端口暴露在服务器控制地址上；生产环境应自行增加防火墙或专网隔离

@@ -9,6 +9,7 @@ export const createNodeRouter = (nodeController: NodeController): Router => {
   router.patch('/:id', nodeController.update);
   router.delete('/:id', nodeController.remove);
   router.post('/:id/ping', nodeController.ping);
+  router.post('/:id/deploy', nodeController.deploy);
 
   return router;
 };

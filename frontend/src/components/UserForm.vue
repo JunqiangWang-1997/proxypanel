@@ -47,14 +47,14 @@ const submitForm = (): void => {
 <template>
   <section class="panel card">
     <div class="panel-head">
-      <p class="eyebrow">Create User</p>
-      <h2>添加用户</h2>
+      <p class="eyebrow">Users</p>
+      <h2>下发用户到已纳管节点</h2>
       <span v-if="selectedNode" class="badge">
-        {{ selectedNode.name }} / {{ selectedNode.inboundTag }}
+        {{ selectedNode.name }} / {{ selectedNode.protocolProfileName || selectedNode.protocol }} / {{ selectedNode.inboundTag }}
       </span>
     </div>
 
-    <form class="user-form" @submit.prevent="submitForm">
+    <form class="control-form" @submit.prevent="submitForm">
       <label>
         <span>邮箱</span>
         <input v-model.trim="form.email" type="email" placeholder="user@example.com" required />
@@ -64,7 +64,7 @@ const submitForm = (): void => {
         <span>节点</span>
         <select v-model.number="form.nodeId" required>
           <option v-for="node in props.nodes" :key="node.id" :value="node.id">
-            {{ node.name }} ({{ node.grpcHost }}:{{ node.grpcPort }})
+            {{ node.name }} ({{ node.host }})
           </option>
         </select>
       </label>
@@ -103,4 +103,3 @@ const submitForm = (): void => {
     </form>
   </section>
 </template>
-

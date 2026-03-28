@@ -42,7 +42,16 @@ export class NodeController {
 
   ping = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await this.nodeService.ping(Number(request.params.id));
+      const result = await this.nodeService.probe(Number(request.params.id));
+      response.json({ data: result });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  deploy = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
+    try {
+      const result = await this.nodeService.deploy(Number(request.params.id));
       response.json({ data: result });
     } catch (error) {
       next(error);

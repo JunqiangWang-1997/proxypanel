@@ -1,5 +1,5 @@
 import { apiRequest } from './client';
-import type { ApiResponse, NodeItem, NodePayload, NodePingResult } from '../types';
+import type { ApiResponse, NodeDeployResult, NodeItem, NodePayload, NodeProbeResult } from '../types';
 
 export const fetchNodes = async (): Promise<NodeItem[]> => {
   const response = await apiRequest<ApiResponse<NodeItem[]>>('/nodes');
@@ -32,8 +32,16 @@ export const deleteNode = async (id: number): Promise<NodeItem[]> => {
   return response.data;
 };
 
-export const pingNode = async (id: number): Promise<NodePingResult> => {
-  const response = await apiRequest<ApiResponse<NodePingResult>>(`/nodes/${id}/ping`, {
+export const pingNode = async (id: number): Promise<NodeProbeResult> => {
+  const response = await apiRequest<ApiResponse<NodeProbeResult>>(`/nodes/${id}/ping`, {
+    method: 'POST'
+  });
+
+  return response.data;
+};
+
+export const deployNode = async (id: number): Promise<NodeDeployResult> => {
+  const response = await apiRequest<ApiResponse<NodeDeployResult>>(`/nodes/${id}/deploy`, {
     method: 'POST'
   });
 

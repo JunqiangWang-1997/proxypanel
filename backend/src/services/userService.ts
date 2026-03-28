@@ -29,6 +29,14 @@ export class UserService {
     const parsed = createUserSchema.parse(input);
     const node = await this.nodeService.getById(parsed.nodeId);
 
+    if (!['online', 'imported'].includes(node.deploymentStatus)) {
+      throw new Error('Selected node has not been deployed yet');
+    }
+
+    if (node.protocol !== 'vless') {
+      throw new Error(`Unsupported protocol for user management: ${node.protocol}`);
+    }
+
     const userToCreate = {
       email: parsed.email,
       nodeId: parsed.nodeId,
@@ -68,6 +76,10 @@ export class UserService {
     }
 
     const node = await this.nodeService.getById(user.nodeId);
+
+    if (node.protocol !== 'vless') {
+      throw new Error(`Unsupported protocol for user management: ${node.protocol}`);
+    }
 
     await this.xrayGrpcService.removeUser(node, user.email);
     await this.userRepository.remove(id);
