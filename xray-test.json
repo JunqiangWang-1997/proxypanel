@@ -1,0 +1,35 @@
+{
+  "log": {
+    "loglevel": "debug"
+  },
+  "api": {
+    "tag": "api",
+    "listen": "127.0.0.1:10085",
+    "services": [
+      "HandlerService",
+      "ReflectionService"
+    ]
+  },
+  "inbounds": [
+    {
+      "tag": "main-inbound",
+      "listen": "127.0.0.1",
+      "port": 20001,
+      "protocol": "vless",
+      "settings": {
+        "clients": [],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "tcp"
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "tag": "direct"
+    }
+  ]
+}
+
