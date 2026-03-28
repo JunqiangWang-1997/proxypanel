@@ -73,17 +73,38 @@ npm install
 cp backend/.env.example backend/.env
 ```
 
-3. 启动后端
+3. 一条命令启动前后端
 
 ```bash
-npm run dev:backend
+npm run dev
 ```
 
-4. 启动前端
+默认会启动：
+
+- 后端：`http://localhost:3000`
+- 前端：`http://localhost:5173`
+
+4. 如果本地已经准备好 Xray 二进制，可连同 Xray 一起启动
 
 ```bash
-npm run dev:frontend
+npm run dev:stack
 ```
+
+`dev:stack` 默认读取：
+
+- Xray 二进制：`tools/xray/v26.3.27/xray`
+- Xray 配置：`xray-test.json`
+
+如果你的 Xray 路径不同，可临时覆盖：
+
+```bash
+XRAY_BIN=/your/path/to/xray npm run dev:stack
+```
+
+说明：
+
+- `npm run dev` 会在 `backend/.env` 不存在时自动从 `.env.example` 复制一份
+- 前端现在已经可以直接在页面里做节点新增、编辑、删除和 Ping 测试，不必全靠 `curl`
 
 ## 默认后端配置
 

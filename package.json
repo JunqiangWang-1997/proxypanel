@@ -7,9 +7,14 @@
     "frontend"
   ],
   "scripts": {
-    "dev:backend": "npm --workspace backend run dev",
+    "dev": "concurrently -k -n backend,frontend -c blue,green \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:stack": "concurrently -k -n xray,backend,frontend -c magenta,blue,green \"npm run dev:xray\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "bash ./scripts/dev-backend.sh",
     "dev:frontend": "npm --workspace frontend run dev",
+    "dev:xray": "bash ./scripts/dev-xray.sh",
     "build": "npm --workspace backend run build && npm --workspace frontend run build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }
-
